@@ -8,88 +8,317 @@
     <style>
         :root { --primary: #3498db; --accent: #e74c3c; --bg: #f8f9fa; }
         body { font-family: 'Noto Sans JP', sans-serif; background-color: var(--bg); color: #333; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; }
-        .container { max-width: 800px; width: 100%; text-align: center; }
-        h1 { font-size: 2rem; color: #2c3e50; margin-bottom: 10px; }
-        .description { font-size: 0.9rem; color: #7f8c8d; margin-bottom: 30px; }
+        .container { max-width: 900px; width: 100%; text-align: center; }
+        h1 { font-size: 2rem; color: #2c3e50; margin-bottom: 5px; }
+        .description { font-size: 0.9rem; color: #7f8c8d; margin-bottom: 20px; }
         
+        /* 設定セクション */
+        .config-section { margin-bottom: 20px; background: #fff; padding: 15px; border-radius: 10px; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        label { font-weight: bold; margin-right: 10px; }
+        select { padding: 8px 15px; border-radius: 5px; border: 1px solid #ccc; font-size: 1rem; cursor: pointer; }
+
         /* お題セクション */
         .odai-card { background: white; border-radius: 15px; padding: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); border-top: 8px solid var(--primary); margin-bottom: 30px; position: relative; }
         .odai-tag { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 2px 20px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
         .odai-text { font-size: 1.5rem; font-weight: bold; line-height: 1.4; color: #2c3e50; }
 
         /* 価値観グリッド */
-        .value-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 40px; }
-        .value-card { background: white; border: 2px solid #eee; border-radius: 12px; padding: 15px; text-align: left; transition: 0.3s; }
+        .value-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 40px; }
+        .value-card { background: white; border: 2px solid #eee; border-radius: 12px; padding: 15px; text-align: left; transition: 0.3s; position: relative; }
         .value-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+        .value-num { background: var(--accent); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-bottom: 8px; display: inline-block; }
         .value-name { color: var(--accent); font-weight: bold; font-size: 1rem; border-bottom: 1px solid #eee; margin-bottom: 8px; display: block; padding-bottom: 5px; }
         .value-desc { font-size: 0.85rem; color: #555; line-height: 1.5; }
 
         /* 操作系 */
         button { background: #2ecc71; color: white; border: none; padding: 18px 40px; border-radius: 50px; font-size: 1.2rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3); transition: 0.2s; width: 100%; max-width: 300px; }
         button:hover { background: #27ae60; transform: scale(1.05); }
-        button:active { transform: scale(0.98); }
 
-        @media (max-width: 480px) { h1 { font-size: 1.5rem; } .odai-text { font-size: 1.2rem; } }
+        @media (max-width: 480px) { h1 { font-size: 1.5rem; } .odai-text { font-size: 1.2rem; } .value-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>🧪 Value Alchemy</h1>
-    <p class="description">5つの価値観を掛け合わせて、最高のアイデアを錬成しよう</p>
+    <p class="description">混ぜ合わせるほど、アイデアは純度を増す</p>
+
+    <div class="config-section">
+        <label for="member-count">👥 参加人数:</label>
+        <select id="member-count" onchange="generate()">
+            <option value="2">2人 (1人3枚ずつ)</option>
+            <option value="3">3人 (1人2枚ずつ)</option>
+            <option value="4">4人 (1人2枚ずつ)</option>
+            <option value="5" selected>5人 (1人1枚ずつ)</option>
+            <option value="6">6人 (1人1枚ずつ)</option>
+            <option value="7">7人 (1人1枚ずつ)</option>
+            <option value="8">8人 (1人1枚ずつ)</option>
+            <option value="9">9人 (1人1枚ずつ)</option>
+            <option value="10">10人 (1人1枚ずつ)</option>
+        </select>
+    </div>
 
     <div class="odai-card">
         <div id="odai-category" class="odai-tag">CATEGORY</div>
-        <div id="odai-display" class="odai-text">「生成する」ボタンを押してください</div>
+        <div id="odai-display" class="odai-text">ボタンを押して、錬成を開始してください</div>
     </div>
 
     <div id="value-container" class="value-grid">
         </div>
 
-    <button onclick="generate()">新しいお題を生成</button>
+    <button onclick="generate()">お題と価値観を生成</button>
 </div>
 
 <script>
 // --- データ定義 ---
 const odaiData = [
+    const odaiData = [
     {cat: "キャンパスライフ", text: "「学食のトレイ」を活用したアクション"},
     {cat: "キャンパスライフ", text: "「大学のパンフレット」を使ったテーブルゲーム"},
-    {cat: "キャンパスライフ", text: "「黒板」を使った空き時間の過ごし方"},
-    {cat: "友達づくり", text: "「スマホの写真1枚」を使った自己紹介"},
-    {cat: "日常・生活", text: "「洗濯ばさみ」を使った的当てゲーム"},
-    // ... ※ここには全200件を後ほど流し込めます
+    {cat: "キャンパスライフ", text: "「黒板（ホワイトボード）」を使った空き時間の過ごし方"},
+    {cat: "キャンパスライフ", text: "「パイプ椅子」を使った空間づくり"},
+    {cat: "キャンパスライフ", text: "「教科書」を使ったスポーツ"},
+    {cat: "キャンパスライフ", text: "「学生証」を使った遊び"},
+    {cat: "キャンパスライフ", text: "「自動販売機」の周りに作る仕組み"},
+    {cat: "キャンパスライフ", text: "「図書館の本棚」を活用したメッセージの伝え方"},
+    {cat: "キャンパスライフ", text: "「空き教室」を使ったイベント"},
+    {cat: "キャンパスライフ", text: "「チョーク」を使ったアート"},
+    {cat: "キャンパスライフ", text: "「ロッカー」を活用した仕掛け"},
+    {cat: "キャンパスライフ", text: "「大学の正門」で行う儀式"},
+    {cat: "キャンパスライフ", text: "「購買のレジ袋」を使ったアイデア"},
+    {cat: "キャンパスライフ", text: "「駐輪場の自転車」の配置を利用したアート"},
+    {cat: "キャンパスライフ", text: "「キャンパスのベンチ」の活用法"},
+    {cat: "キャンパスライフ", text: "「ゴミ箱」を活用したルール"},
+    {cat: "キャンパスライフ", text: "「階段」の昇降に付与するルール"},
+    {cat: "キャンパスライフ", text: "「窓ガラス」越しに行うコミュニケーション"},
+    {cat: "キャンパスライフ", text: "「時計の秒針」を使ったタイムアタック"},
+    {cat: "キャンパスライフ", text: "「大学の傘立て」を活用したシステム"},
+    {cat: "友達づくり・交流", text: "「スマホの写真1枚」を使った自己紹介"},
+    {cat: "友達づくり・交流", text: "「トランプ」を使った心理戦"},
+    {cat: "友達づくり・交流", text: "「名刺サイズの白紙」で作るコミュニケーションツール"},
+    {cat: "友達づくり・交流", text: "「お菓子のグミ」を使ったグループでの遊び"},
+    {cat: "友達づくり・交流", text: "「サイコロ」を使った会話の仕組み"},
+    {cat: "友達づくり・交流", text: "「付箋（ふせん）」を使った陣取りゲーム"},
+    {cat: "友達づくり・交流", text: "「服の色」を使ったグループ分け"},
+    {cat: "友達づくり・交流", text: "「じゃんけん」に代わる勝敗の決め方"},
+    {cat: "友達づくり・交流", text: "「ハイタッチ」に代わるアクション"},
+    {cat: "友達づくり・交流", text: "「有線イヤホン」のコードを使った遊び"},
+    {cat: "友達づくり・交流", text: "「ハンカチ」を使ったアイスブレイク"},
+    {cat: "友達づくり・交流", text: "「ペットボトル」を使った声かけの仕組み"},
+    {cat: "友達づくり・交流", text: "「おにぎりの具」をテーマにした討論"},
+    {cat: "友達づくり・交流", text: "「血液型」に代わる性格分類"},
+    {cat: "友達づくり・交流", text: "「あだ名」を付ける時のルール"},
+    {cat: "友達づくり・交流", text: "「しりとり」を進化させたゲーム"},
+    {cat: "友達づくり・交流", text: "「にらめっこ」に代わる対決"},
+    {cat: "友達づくり・交流", text: "「指スマ（いっせーのせ）」に追加するルール"},
+    {cat: "友達づくり・交流", text: "「お辞儀」に代わる挨拶"},
+    {cat: "友達づくり・交流", text: "「自分のポケットに入っている物」を使った即興ゲーム"},
+    {cat: "日常・生活", text: "「同居人全員」が起きるための朝のシステム"},
+    {cat: "日常・生活", text: "「洗面台の鏡」を使った朝の儀式"},
+    {cat: "日常・生活", text: "「トイレットペーパーの芯」を使った遊び"},
+    {cat: "日常・生活", text: "「冷蔵庫」の扉を活用したコミュニケーション"},
+    {cat: "日常・生活", text: "「電子レンジ」を使った料理以外の使い道"},
+    {cat: "日常・生活", text: "「洗濯ばさみ」を使った的なてゲーム"},
+    {cat: "日常・生活", text: "「空きダンボール」を使ったグッズ"},
+    {cat: "日常・生活", text: "「ハンガー」の服をかける以外の用途"},
+    {cat: "日常・生活", text: "「ティッシュの空き箱」を使った楽器"},
+    {cat: "日常・生活", text: "「フライパン」の料理以外の用途"},
+    {cat: "日常・生活", text: "「お箸」を使った食事中のトレーニング"},
+    {cat: "日常・生活", text: "「マグカップ」を活用した会話の仕掛け"},
+    {cat: "日常・生活", text: "「丸めた靴下」を使った室内スポーツ"},
+    {cat: "日常・生活", text: "「洗面所の鏡」を使った仕掛け"},
+    {cat: "日常・生活", text: "「カレンダーの祝日がない月」のシステム"},
+    {cat: "日常・生活", text: "「銭湯・大浴場」でのローカルルール"},
+    {cat: "日常・生活", text: "「ドライヤーの風」を利用したスポーツ"},
+    {cat: "日常・生活", text: "「枕」を使った寝る前のアクション"},
+    {cat: "日常・生活", text: "「スリッパ」を使った移動ルール"},
+    {cat: "日常・生活", text: "「リモコン」の使っていないボタンに割り当てる機能"},
+    {cat: "食べ物・飲み物", text: "「学食のカレーライス」を注文した人同士の交流"},
+    {cat: "食べ物・飲み物", text: "「ショートケーキのイチゴ」をめぐるルール"},
+    {cat: "食べ物・飲み物", text: "「ポテトチップス」を使ったパーティーでの食べ方"},
+    {cat: "食べ物・飲み物", text: "「カップラーメンの空き容器」を使った工作"},
+    {cat: "食べ物・飲み物", text: "「みかんの皮」を使ったテーブルでの対決"},
+    {cat: "食べ物・飲み物", text: "「板チョコレート」を使ったゲーム"},
+    {cat: "食べ物・飲み物", text: "「食パン」を使ったトッピングの仕組み"},
+    {cat: "食べ物・飲み物", text: "「納豆」を混ぜる回数をめぐるスポーツ"},
+    {cat: "食べ物・飲み物", text: "「お寿司のネタ」を使った占いゲーム"},
+    {cat: "食べ物・飲み物", text: "「ハンバーガー」を食べる時の工夫"},
+    {cat: "食べ物・飲み物", text: "「たこ焼き」の中身をめぐる心理戦"},
+    {cat: "食べ物・飲み物", text: "「かき氷のシロップ」を使った実験"},
+    {cat: "食べ物・飲み物", text: "「映画の上映前」の時間を過ごす遊び"},
+    {cat: "食べ物・飲み物", text: "「コーヒー」を飲むための空間づくり"},
+    {cat: "食べ物・飲み物", text: "「コーラの炭酸」を活かした飲み口の工夫"},
+    {cat: "食べ物・飲み物", text: "「授業中の眠気」に対抗するルール"},
+    {cat: "食べ物・飲み物", text: "「目玉焼き」に何をかけるかを決めるプレゼン"},
+    {cat: "食べ物・飲み物", text: "「お弁当のタコさんウィンナー」に代わるおかず"},
+    {cat: "食べ物・飲み物", text: "「流しそうめん」の竹の代わりに使う食事法"},
+    {cat: "食べ物・飲み物", text: "「スイカ割り」に代わる行事"},
+    {cat: "文房具・アイテム", text: "「消しゴムのカス」を集めて行う競技"},
+    {cat: "文房具・アイテム", text: "「短くなった鉛筆」を使い切るための仕掛け"},
+    {cat: "文房具・アイテム", text: "「ノートの切れ端」を使った手紙の折り方"},
+    {cat: "文房具・アイテム", text: "「ボールペンのバネ」を使ったおもちゃ"},
+    {cat: "文房具・アイテム", text: "「ホッチキスの針」を使った紙をとじる以外の使い方"},
+    {cat: "文房具・アイテム", text: "「ゼムクリップ」を繋げて作るアクセサリー"},
+    {cat: "文房具・アイテム", text: "「クリアファイルの摩擦」を利用した遊び"},
+    {cat: "文房具・アイテム", text: "「ハサミの切れ端」を活用した遊び"},
+    {cat: "文房具・アイテム", text: "「下敷き」を使った静電気以外の実験"},
+    {cat: "文房具・アイテム", text: "「修正テープの白い線」を道に見立てた遊び"},
+    {cat: "文房具・アイテム", text: "「プリントの裏紙」を活用した掲示板"},
+    {cat: "文房具・アイテム", text: "「輪ゴムの弾力」を活かしたスポーツ"},
+    {cat: "文房具・アイテム", text: "「セロハンテープ」を使った仕掛け"},
+    {cat: "文房具・アイテム", text: "「画鋲」をコルクボードに刺す以外の遊び"},
+    {cat: "文房具・アイテム", text: "「電卓の数字入力機能」を使った暗号ゲーム"},
+    {cat: "文房具・アイテム", text: "「三角定規の形」を活かした写真のポーズ"},
+    {cat: "文房具・アイテム", text: "「コンパス」で円を描く以外の使い道"},
+    {cat: "文房具・アイテム", text: "「マスキングテープ」を活用した目立たせ方"},
+    {cat: "文房具・アイテム", text: "「単語帳」を活用したコミュニケーションツール"},
+    {cat: "文房具・アイテム", text: "「筆箱の中身」だけで行うゲーム"},
+    {cat: "遊び・ゲーム", text: "「鬼ごっこ」に追加するルール"},
+    {cat: "遊び・ゲーム", text: "「かくれんぼ」を狭い空間で遊ぶルール"},
+    {cat: "遊び・ゲーム", text: "「だるまさんが転んだ」を進化させたゲーム"},
+    {cat: "遊び・ゲーム", text: "「椅子取りゲーム」の椅子を別のものに替えるルール"},
+    {cat: "遊び・ゲーム", text: "「ビンゴ大会」で数字を使わないビンゴカード"},
+    {cat: "遊び・ゲーム", text: "「ババ抜き」に代わる心理戦"},
+    {cat: "遊び・ゲーム", text: "「しっぽ取り」を狭い空間で遊ぶルール"},
+    {cat: "遊び・ゲーム", text: "「宝探し」のヒントを身の回りのモノで作る方法"},
+    {cat: "遊び・ゲーム", text: "「ジェスチャーゲーム」を事前に決めずに行うルール"},
+    {cat: "遊び・ゲーム", text: "「伝言ゲーム」の伝え方のルール"},
+    {cat: "遊び・ゲーム", text: "「カルタの読み札」を大学生活のテーマで埋めるアイデア"},
+    {cat: "遊び・ゲーム", text: "「はないちもんめ」に追加するルール"},
+    {cat: "遊び・ゲーム", text: "「ボーリングのピンとボール」を代用した遊び"},
+    {cat: "遊び・ゲーム", text: "「玉入れのカゴ」を動く人間にした時のルール"},
+    {cat: "遊び・ゲーム", text: "「リレーのバトン」を別のモノに変えるルール"},
+    {cat: "遊び・ゲーム", text: "「福笑いの目隠し」を進化させた遊び"},
+    {cat: "遊び・ゲーム", text: "「あやとりの毛糸」を使った大人数でのコミュニケーション"},
+    {cat: "遊び・ゲーム", text: "「すごろくのマス目」を大学生活の出来事で埋めるアイデア"},
+    {cat: "遊び・ゲーム", text: "「ドッジボール」でボールに当たった時の特別ルール"},
+    {cat: "遊び・ゲーム", text: "「大縄跳び」で全員の息を合わせる掛け声"},
+    {cat: "お出かけ・乗り物", text: "「自転車での移動中」の遊び"},
+    {cat: "お出かけ・乗り物", text: "「通学電車で同じ車両に乗っている人」の連帯感を生む仕組み"},
+    {cat: "お出かけ・乗り物", text: "「バスの降車ボタン」を押す権利をめぐるルール"},
+    {cat: "お出かけ・乗り物", text: "「改札機」を通る瞬間の仕掛け"},
+    {cat: "お出かけ・乗り物", text: "「エスカレーター」に乗っている間の過ごし方"},
+    {cat: "お出かけ・乗り物", text: "「エレベーターの同乗者」との沈黙に対するアクション"},
+    {cat: "お出かけ・乗り物", text: "「横断歩道の信号待ち」の時間の使い方"},
+    {cat: "お出かけ・乗り物", text: "「自動ドア」が開く瞬間のアクション"},
+    {cat: "お出かけ・乗り物", text: "「スーパーのカート」の動きを活かしたアイデア"},
+    {cat: "お出かけ・乗り物", text: "「公園のブランコ」を使った乗り方"},
+    {cat: "お出かけ・乗り物", text: "「すべり台」を下から上る以外で遊ぶ方法"},
+    {cat: "お出かけ・乗り物", text: "「砂場」で作る造形物のテーマ"},
+    {cat: "お出かけ・乗り物", text: "「温泉」でのローカルルール"},
+    {cat: "お出かけ・乗り物", text: "「遊園地の待ち時間」の遊び"},
+    {cat: "お出かけ・乗り物", text: "「美術館での鑑賞」のゲーム化"},
+    {cat: "お出かけ・乗り物", text: "「動物園」で動物からの注目を集める方法"},
+    {cat: "お出かけ・乗り物", text: "「水族館の魚」に意思を伝えるジェスチャー"},
+    {cat: "お出かけ・乗り物", text: "「飛行機の機内」での過ごし方"},
+    {cat: "お出かけ・乗り物", text: "「新幹線や長距離バス」での移動中の空間づくり"},
+    {cat: "お出かけ・乗り物", text: "「観覧車」の1周の間に完了させるミッション"},
+    {cat: "もしも・空想", text: "「10分前だけ戻れるタイムマシン」の利用ルール"},
+    {cat: "もしも・空想", text: "「透明人間」がキャンパス内にいると仮定した遊び"},
+    {cat: "もしも・空想", text: "「地上10cmしか飛べない靴」を使ったスポーツ"},
+    {cat: "もしも・空想", text: "「大学内の野良猫（動物）」が関わるイベント"},
+    {cat: "もしも・空想", text: "「物を大きくするライト」で巨大化させる対象"},
+    {cat: "もしも・空想", text: "「どこにでも行けるドア」を大学内に設置する場所"},
+    {cat: "もしも・空想", text: "「昔の恥ずかしい記憶」を書いた紙の取り扱いルール"},
+    {cat: "もしも・空想", text: "「心が読めるメガネ」をかけた状態でのイベント"},
+    {cat: "もしも・空想", text: "「味が変わるキャンディ」で食べる食材"},
+    {cat: "もしも・空想", text: "「分身の術」が使える状態で行うリレー競技"},
+    {cat: "もしも・空想", text: "「声が別人に変わるマイク」を使ったカラオケのルール"},
+    {cat: "もしも・空想", text: "「明日開けるタイムカプセル」の中に入れるモノ"},
+    {cat: "もしも・空想", text: "「世界中の時間が止まる時計」を使った実験"},
+    {cat: "もしも・空想", text: "「透明人間になれるスプレー」を使った仕掛け"},
+    {cat: "もしも・空想", text: "「すべての言語が理解できる翻訳こんにゃく」で読む本"},
+    {cat: "もしも・空想", text: "「1年後の未来の新聞」を貼り出す時の工夫"},
+    {cat: "もしも・空想", text: "「宇宙船」がグラウンドに不時着した時の対応"},
+    {cat: "もしも・空想", text: "「天気を操れるリモコン」で文化祭の日に設定する天気"},
+    {cat: "もしも・空想", text: "「空腹が完全に満たされるガム」の宣伝方法"},
+    {cat: "もしも・空想", text: "「全員が同じ仮面」を被って行う交流会のルール"},
+    {cat: "自然・季節", text: "「落ち葉」を集めて作るアート作品"},
+    {cat: "自然・季節", text: "「雪だるま」に代わる冬のシンボル"},
+    {cat: "自然・季節", text: "「どんぐり」を使ったテーブルゲーム"},
+    {cat: "自然・季節", text: "「水たまり」に対するルール"},
+    {cat: "自然・季節", text: "「セミの抜け殻」を使った遊び"},
+    {cat: "自然・季節", text: "「雑草」を使ったカードゲーム"},
+    {cat: "自然・季節", text: "「たんぽぽの綿毛」を遠くまで飛ばすためのアプローチ"},
+    {cat: "自然・季節", text: "「四つ葉のクローバー」を見つけるためのチームワーク"},
+    {cat: "自然・季節", text: "「そのへんの葉っぱ」を拾ってきて芸術作品にする方法"},
+    {cat: "自然・季節", text: "「石ころ」を拾って宝物に変える方法"},
+    {cat: "自然・季節", text: "「砂浜の砂」で作る造形物"},
+    {cat: "自然・季節", text: "「貝殻」の使い道"},
+    {cat: "自然・季節", text: "「松ぼっくり」を使った飾り付け"},
+    {cat: "自然・季節", text: "「氷」が溶けるまでの時間を過ごすゲーム"},
+    {cat: "自然・季節", text: "「虹」を見つけた時にやるアクション"},
+    {cat: "自然・季節", text: "「雷」が鳴った時の迷信"},
+    {cat: "自然・季節", text: "「風船」の中に手紙を入れて飛ばす以外の届け方"},
+    {cat: "自然・季節", text: "「双眼鏡」を使った夜の遊び方"},
+    {cat: "自然・季節", text: "「朝日」を見るための仕組み"},
+    {cat: "自然・季節", text: "「夕焼け」を背景にして撮る写真のポーズ"},
+    {cat: "小さな悩み解決", text: "「カバンの中で物が迷子になる問題」の解決ルール"},
+    {cat: "小さな悩み解決", text: "「ビニール傘が自分のものだとわかる目印」の仕組み"},
+    {cat: "小さな悩み解決", text: "「歩きスマホをしている人に向けたアプローチ」"},
+    {cat: "小さな悩み解決", text: "「靴下が片方なくなる問題」を活かしたファッション"},
+    {cat: "小さな悩み解決", text: "「鍵を持たずに外に出た時」の時間の過ごし方"},
+    {cat: "小さな悩み解決", text: "「部屋の鍵を閉めたか不安になる問題」を解消する儀式"},
+    {cat: "小さな悩み解決", text: "「髪を切ったことに気づかれない時」のアピール方法"},
+    {cat: "小さな悩み解決", text: "「お釣りの小銭が財布にパンパンになる問題」を減らす方法"},
+    {cat: "小さな悩み解決", text: "「服に醤油を飛ばしてしまった時」の対処法"},
+    {cat: "小さな悩み解決", text: "「寝起きのぼさぼさ頭のままで参加できるイベント」"},
+    {cat: "小さな悩み解決", text: "「大遅刻した人が到着するまで」の待つ側のゲーム"},
+    {cat: "小さな悩み解決", text: "「静かな教室でお腹が鳴ってしまった時」のアクション"},
+    {cat: "小さな悩み解決", text: "「名前が出てこない人に話しかけられた時」の切り抜け方"},
+    {cat: "小さな悩み解決", text: "「自動販売機で小銭を落とした時」の拾い方"},
+    {cat: "小さな悩み解決", text: "「自転車のサドルが濡れている時」に乗るための工夫"},
+    {cat: "小さな悩み解決", text: "「アイスが溶けそうな時」の食べ方"},
+    {cat: "小さな悩み解決", text: "「マヨネーズが最後まで出ない時」の使い切り方"},
+    {cat: "小さな悩み解決", text: "「蚊に刺された人」を主役にしたゲーム"},
+    {cat: "小さな悩み解決", text: "「しゃっくりが出ている人」を主役にしたゲーム"},
+    {cat: "小さな悩み解決", text: "「キャンパス内で転んだ人」をフォローする仕組み"}
+];
 ];
 
 const valueData = [
-    {name: "極限の制約", desc: "お金や大掛かりな準備を一切排除し、シンプルで無駄のない構造にすること。"},
-    {name: "相互依存", desc: "全員に「なくてはならない役割」があり、一人でも欠けると成立しないこと。"},
-    {name: "超・即効性", desc: "準備に時間をかけず、思い立ったら1分以内で一瞬にして完了すること。"},
-    {name: "カオス・狂気", desc: "常識や論理を吹き飛ばす、思わず笑ってしまうようなバカバカしさ。"},
-    {name: "強制的ルーティン", desc: "その場限りではなく、明日からも「息をするように」やってしまう仕組み。"},
-    {name: "最新テクノロジー", desc: "スマホやAIなどのデバイスを、本来とは違う形で巧みに組み込むこと。"},
-    {name: "泥臭い身体性", desc: "あえて「汗をかく、移動する、直接触れ合う」などの身体動作を強制すること。"},
-    {name: "究極の安全性", desc: "誰も恥をかかず、スキル不要で、「失敗」という概念すら存在しない空間。"},
-    {name: "無作為な巻き込み", desc: "内輪だけでなく、通りすがりの人や第三者を（無理なく）巻き込むこと。"},
-    {name: "無意識の利他", desc: "ただ楽しんでいるだけなのに、結果的に誰かを助けたり環境を良くすること。"}
+    {name: "極限の制約・ミニマリズム", desc: "お金や大掛かりな準備を一切排除し、極限までシンプルで無駄のないルール・構造にすること。"},
+    {name: "相互依存・運命共同体", desc: "参加メンバー全員に「なくてはならない役割」があり、一人でも欠けたりサボったりすると成立しないこと。"},
+    {name: "超・即効性（タイパ）", desc: "準備や実行に時間をかけず、思い立ったら1分以内で一瞬にして完了し、結果が出ること。"},
+    {name: "カオス・狂気・ユーモア", desc: "常識や論理を吹き飛ばす、思わず「何それ？」と笑ってしまうような狂気やバカバカしさを含んでいること。"},
+    {name: "強制的ルーティン", desc: "その場限りの単発で終わらず、明日からも「息をするように毎日やってしまう」持続可能な仕組みであること。"},
+    {name: "最新テクノロジーのハック", desc: "スマホ、SNS、AIなどのデジタル技術やデバイスを、本来の用途とは全く違う形で巧みに組み込むこと。"},
+    {name: "泥臭い身体性", desc: "効率やデジタルの便利さに逆行し、あえて「汗をかく、移動する、直接触れ合う」などの物理的な身体動作を強制すること。"},
+    {name: "究極の心理的安全性", desc: "誰も恥をかかず、運動神経やスキルも不要で、「失敗」という概念すら存在しない平和な空間であること。"},
+    {name: "無作為な巻き込み", desc: "その場にいる内輪のメンバーだけでなく、通りすがりの人や全く無関係な第三者を（無理なく）巻き込んでしまうこと。"},
+    {name: "無意識の利他・エコシステム", desc: "参加者はただ楽しんでいるだけなのに、結果的に勝手に社会や他者を助けることに繋がること。"}
 ];
 
 // --- ゲームロジック ---
 function generate() {
-    // お題の抽選
+    // 1. お題の抽選
     const odai = odaiData[Math.floor(Math.random() * odaiData.length)];
     document.getElementById('odai-display').innerText = odai.text;
     document.getElementById('odai-category').innerText = odai.cat;
 
-    // 価値観のシャッフル（5枚選択）
+    // 2. 人数に応じたカード枚数の決定
+    const memberCount = parseInt(document.getElementById('member-count').value);
+    let cardCount = 5; // デフォルト
+    if (memberCount === 2) cardCount = 6;
+    else if (memberCount === 3) cardCount = 6;
+    else if (memberCount === 4) cardCount = 8;
+    else cardCount = memberCount; // 5人以上は1人1枚
+
+    // 3. 価値観のシャッフル
     const shuffled = [...valueData].sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, 5);
+    // 10枚以上要求された場合は全件表示、そうでなければ必要枚数を抽出
+    const selected = shuffled.slice(0, Math.min(cardCount, 10));
 
     const container = document.getElementById('value-container');
     container.innerHTML = '';
     
-    selected.forEach(v => {
+    selected.forEach((v, index) => {
+        // 価値観データから元の番号（ID）を探す
+        const originalId = valueData.findIndex(item => item.name === v.name) + 1;
+        
         container.innerHTML += `
             <div class="value-card">
+                <div class="value-num">価値観 ${originalId}</div>
                 <span class="value-name">${v.name}</span>
                 <div class="value-desc">${v.desc}</div>
             </div>
