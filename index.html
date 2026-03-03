@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Value Alchemy | 価値観共創ゲーム</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #3498db; --accent: #e74c3c; --bg: #f8f9fa; }
+        body { font-family: 'Noto Sans JP', sans-serif; background-color: var(--bg); color: #333; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; }
+        .container { max-width: 800px; width: 100%; text-align: center; }
+        h1 { font-size: 2rem; color: #2c3e50; margin-bottom: 10px; }
+        .description { font-size: 0.9rem; color: #7f8c8d; margin-bottom: 30px; }
+        
+        /* お題セクション */
+        .odai-card { background: white; border-radius: 15px; padding: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); border-top: 8px solid var(--primary); margin-bottom: 30px; position: relative; }
+        .odai-tag { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 2px 20px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        .odai-text { font-size: 1.5rem; font-weight: bold; line-height: 1.4; color: #2c3e50; }
+
+        /* 価値観グリッド */
+        .value-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 40px; }
+        .value-card { background: white; border: 2px solid #eee; border-radius: 12px; padding: 15px; text-align: left; transition: 0.3s; }
+        .value-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+        .value-name { color: var(--accent); font-weight: bold; font-size: 1rem; border-bottom: 1px solid #eee; margin-bottom: 8px; display: block; padding-bottom: 5px; }
+        .value-desc { font-size: 0.85rem; color: #555; line-height: 1.5; }
+
+        /* 操作系 */
+        button { background: #2ecc71; color: white; border: none; padding: 18px 40px; border-radius: 50px; font-size: 1.2rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3); transition: 0.2s; width: 100%; max-width: 300px; }
+        button:hover { background: #27ae60; transform: scale(1.05); }
+        button:active { transform: scale(0.98); }
+
+        @media (max-width: 480px) { h1 { font-size: 1.5rem; } .odai-text { font-size: 1.2rem; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🧪 Value Alchemy</h1>
+    <p class="description">5つの価値観を掛け合わせて、最高のアイデアを錬成しよう</p>
+
+    <div class="odai-card">
+        <div id="odai-category" class="odai-tag">CATEGORY</div>
+        <div id="odai-display" class="odai-text">「生成する」ボタンを押してください</div>
+    </div>
+
+    <div id="value-container" class="value-grid">
+        </div>
+
+    <button onclick="generate()">新しいお題を生成</button>
+</div>
+
+<script>
+// --- データ定義 ---
+const odaiData = [
+    {cat: "キャンパスライフ", text: "「学食のトレイ」を活用したアクション"},
+    {cat: "キャンパスライフ", text: "「大学のパンフレット」を使ったテーブルゲーム"},
+    {cat: "キャンパスライフ", text: "「黒板」を使った空き時間の過ごし方"},
+    {cat: "友達づくり", text: "「スマホの写真1枚」を使った自己紹介"},
+    {cat: "日常・生活", text: "「洗濯ばさみ」を使った的当てゲーム"},
+    // ... ※ここには全200件を後ほど流し込めます
+];
+
+const valueData = [
+    {name: "極限の制約", desc: "お金や大掛かりな準備を一切排除し、シンプルで無駄のない構造にすること。"},
+    {name: "相互依存", desc: "全員に「なくてはならない役割」があり、一人でも欠けると成立しないこと。"},
+    {name: "超・即効性", desc: "準備に時間をかけず、思い立ったら1分以内で一瞬にして完了すること。"},
+    {name: "カオス・狂気", desc: "常識や論理を吹き飛ばす、思わず笑ってしまうようなバカバカしさ。"},
+    {name: "強制的ルーティン", desc: "その場限りではなく、明日からも「息をするように」やってしまう仕組み。"},
+    {name: "最新テクノロジー", desc: "スマホやAIなどのデバイスを、本来とは違う形で巧みに組み込むこと。"},
+    {name: "泥臭い身体性", desc: "あえて「汗をかく、移動する、直接触れ合う」などの身体動作を強制すること。"},
+    {name: "究極の安全性", desc: "誰も恥をかかず、スキル不要で、「失敗」という概念すら存在しない空間。"},
+    {name: "無作為な巻き込み", desc: "内輪だけでなく、通りすがりの人や第三者を（無理なく）巻き込むこと。"},
+    {name: "無意識の利他", desc: "ただ楽しんでいるだけなのに、結果的に誰かを助けたり環境を良くすること。"}
+];
+
+// --- ゲームロジック ---
+function generate() {
+    // お題の抽選
+    const odai = odaiData[Math.floor(Math.random() * odaiData.length)];
+    document.getElementById('odai-display').innerText = odai.text;
+    document.getElementById('odai-category').innerText = odai.cat;
+
+    // 価値観のシャッフル（5枚選択）
+    const shuffled = [...valueData].sort(() => 0.5 - Math.random());
+    const selected = shuffled.slice(0, 5);
+
+    const container = document.getElementById('value-container');
+    container.innerHTML = '';
+    
+    selected.forEach(v => {
+        container.innerHTML += `
+            <div class="value-card">
+                <span class="value-name">${v.name}</span>
+                <div class="value-desc">${v.desc}</div>
+            </div>
+        `;
+    });
+}
+</script>
+
+</body>
+</html>
